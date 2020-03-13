@@ -86,7 +86,7 @@ def input_to_tree(line):
     return root
 
 
-def write_output(filename, output):
+def write_output_to_file(filename, output):
     """
     Writes outpus to a file.
     """
@@ -103,4 +103,4 @@ while len(lines)>0:
         nr_leafs_visited=0
         best_val=alpha_beta(root, -10_000_000, 10_000_000)
         output = "Best possible value: %d, Number of leafs visited %d\n" %(best_val, nr_leafs_visited)
-        write_output("alphabeta_out.txt",output)
+        write_output_to_file("alphabeta_out.txt",output)
