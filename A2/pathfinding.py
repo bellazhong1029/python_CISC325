@@ -1,3 +1,5 @@
+import math
+
 class Node():
     """A node class for A* Pathfinding"""
     def __init__(self, parent=None, position=None):
@@ -93,15 +95,71 @@ def astar(maze, start, goal):
             # Add the child to the open list
             open_list.append(child)
             
+'''
+class GreedyNode
+'''
+class GreedyNode:
+    def __init__(self,x,y,came_from=None):
+        self.x = x
+        self.y = y
+        self.came_from = came_from
+
+    def neighbors(self):
+        global maze
+        all_possible_neighbors = []
+        neighbors = []
+        x = self.x
+        y = self.y
+        all_possible_neighbors += [[x-1,y], [x+1,y], [x,y-1],[x,y+1]] 
+        for node in all_possible_neighbors:
+            #node is in maze boundaries
+            nodex = node[0] - 1
+            nodey = node[1] - 1
+            if nodex > 0 and nodey > 0: 
+                node_value = maze[nodey][nodex]
+                if node_value == 0:
+                    neighbors.append([nodex+1, nodey+1])
+        return neighbors
+
+        
+'''
+function greedySearch_a
+finds a path between the start position and the goal position using 
+Greedy algorithm assuming that the agent can move up, down, left, and right, 
+but not diagonally. Further assume that the cost of moving up, down, left, 
+or right is 1.
+'''
+def g(maze ,start, goal):
+    frontier = []
+    startNode = GreedyNode(start[0], start[1])
+    frontier.append(startNode)
+    visited = []
+    visited.append(start)
+
+    while len(frontier)!=0:
+        currentNode = frontier.pop()
+        if currentNode.x == goal[0] and currentNode.y == goal[1]:
+            break
+        for next in currentNode.neighbors():
+            if next not in visited:
+                priority = greedy_heuristic(goal, next) 
+
+
+def greedy_heuristic(goal, next):
+    return math.sqrt(math.pow(abs(goal[0] - next[0]),2) + math.pow(abs(goal[1]-next[1]),2)) 
+    
 
 def convert_list_to_maze(count, line, maze):
     '''
     convert graph maze into maze of numbers 
     '''
+    global start, goal 
     newline= []
     for i in line:
+        # obstacle = 1
         if i =='X':
             newline.append(1)
+        # non-obstavle = 0
         elif i =='_':
             newline.append(0)
         elif i =='S':
@@ -114,10 +172,10 @@ def convert_list_to_maze(count, line, maze):
 
 
 def main():
-    global maze,start,goal 
+    global maze, start, goal
     maze=[]
-    start=[0,0]
-    goal=[0,0]
+    start = []
+    goal = []
 
     filepath = "pathfinding_a.txt"
     with open(filepath) as f:
@@ -129,7 +187,8 @@ def main():
             line = f.readline()
             count += 1
 
-    path = astar(maze, start, goal)
-    print(path)
+    g(maze, start, goal)
+    # path = astar(maze, start, goal)
+    # print(path)
 
 main()
