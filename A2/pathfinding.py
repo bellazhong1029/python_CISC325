@@ -11,13 +11,14 @@ class Node():
         return self.position == other.position
 
 
-def astar(maze, start, end):
-    """Returns a list of tuples as a path from the given start to the given end in the given maze"""
-    # Create start and end node
+def astar(maze, start, goal):
+    """Returns a list of tuples as a path 
+    from the given start to the given goal in the given maze"""
+    # Create start and goal node
     start_node = Node(None, start)
     start_node.g = start_node.h = start_node.f = 0
-    end_node = Node(None, end)
-    end_node.g = end_node.h = end_node.f = 0
+    goal_node = Node(None, goal)
+    goal_node.g = goal_node.h = goal_node.f = 0
 
     # Initialize both open and closed list
     open_list = []
@@ -26,7 +27,7 @@ def astar(maze, start, end):
     # Add the start node
     open_list.append(start_node)
 
-    # Loop until you find the end
+    # Loop until you find the goal
     while len(open_list) > 0:
         # Get the current node
         current_node = open_list[0]
@@ -41,7 +42,7 @@ def astar(maze, start, end):
         closed_list.append(current_node)
 
         # Found the goal
-        if current_node == end_node:
+        if current_node == goal_node:
             path = []
             current = current_node
             while current is not None:
@@ -68,7 +69,7 @@ def astar(maze, start, end):
             # Create new node
             new_node = Node(current_node, node_position)
 
-            # Append
+            # append
             children.append(new_node)
 
         # Loop through children
@@ -81,7 +82,7 @@ def astar(maze, start, end):
 
             # Create the f, g, and h values
             child.g = current_node.g + 1
-            child.h = ((child.position[0] - end_node.position[0]) ** 2) + ((child.position[1] - end_node.position[1]) ** 2)
+            child.h = ((child.position[0] - goal_node.position[0]) ** 2) + ((child.position[1] - goal_node.position[1]) ** 2)
             child.f = child.g + child.h
 
             # Child is already in the open list
@@ -91,80 +92,44 @@ def astar(maze, start, end):
 
             # Add the child to the open list
             open_list.append(child)
+            
 
+def convert_list_to_maze(count, line, maze):
+    '''
+    convert graph maze into maze of numbers 
+    '''
+    newline= []
+    for i in line:
+        if i =='X':
+            newline.append(1)
+        elif i =='_':
+            newline.append(0)
+        elif i =='S':
+            newline.append(0)
+            start = [line.index(i)+1, count]
+        elif i=='G':
+            newline.append(0)
+            goal = [line.index(i)+1, count]
+    maze.append(newline)
 
-# def readFile(inputFile):
-#     maze = []
-#     maze_line = []
-#     file = open(inputFile, "r")
-#     line = file.readline()
-#     k = 0
-#     start = [0, 0]
-#     end = [0, 0]
-#     while(line[0].equals('X') or line[0].equals('_') or line[0].equals('S') or line[0].equals('G')):
-#         for i in range(len(line)):
-#             if line[i].equals('X'):
-#                 maze_line.append(1)
-#             elif line[i].equals('_'):
-#                 maze_line.append(0)
-#             elif line[i].equals('S'):
-#                 maze_line.append(0)
-#                 start = [k, i]
-#             elif line[i].equals('G'):
-#                 maze_line.append(0)
-#                 start = [k, i]
-#             line = file.readline()
-#         maze.append(maze_line)
-#         k++
 
 def main():
+    global maze,start,goal 
+    maze=[]
+    start=[0,0]
+    goal=[0,0]
 
-    # maze = [[0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
-    #         [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
-    #         [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
-    #         [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
-    #         [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
-    #         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    #         [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
-    #         [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
-    #         [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
-    #         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]]
-    #
-    # start = (0, 0)
-    # end = (7, 6)
+    filepath = "pathfinding_a.txt"
+    with open(filepath) as f:
+        line = f.readline()
+        count=1
+        while line:
+            maze_line = line.strip()
+            convert_list_to_maze(count, maze_line, maze)
+            line = f.readline()
+            count += 1
 
-
-    maze = []
-    maze_line = []
-    file = open("./pathfinding_a.txt", "r")
-    k = 0
-    start = [0, 0]
-    end = [0, 0]
-    line = file.readline()
-    while(len(line)>2):
-        print(line)
-        for i in range(len(line)-2):
-            print(i)
-            print(line[i])
-            if line[i]=='X':
-                maze_line.append(1)
-            elif line[i]=='_':
-                maze_line.append(0)
-            elif line[i]=='S':
-                maze_line.append(0)
-                start = [k, i]
-            elif line[i]=='G':
-                maze_line.append(0)
-                start = [k, i]
-            line = file.readline()
-        maze.append(maze_line)
-        k += 1
-        line = file.readline()
-
-
-
-    path = astar(maze, start, end)
+    path = astar(maze, start, goal)
     print(path)
-
 
 main()
