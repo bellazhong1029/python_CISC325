@@ -1,4 +1,5 @@
 import math
+import sys
 
 class Node():
     """A node class for A* Pathfinding"""
@@ -94,60 +95,136 @@ def astar(maze, start, goal):
 
             # Add the child to the open list
             open_list.append(child)
-            
+
+
 '''
 class GreedyNode
 '''
 class GreedyNode:
-    def __init__(self,x,y,came_from=None):
+    def __init__(self,x,y,priority,came_from=None):
         self.x = x
         self.y = y
+        self.priority = priority
         self.came_from = came_from
 
-    def neighbors(self):
-        global maze
+    '''
+    function neighbors returns all the neighbor nodes
+    when type == a, the algorithm assumes that the agent can move up, down, left, and right, 
+    but not diagonally.In best scenerio, the node has four neighbors.
+    when type == b, the algorithm assumes that the agent can move up, down, left, and right, 
+    and diagonally. In best scenerio, the node has eight neighbors.
+    '''
+    def neighbors(self,type,maze):
         all_possible_neighbors = []
         neighbors = []
         x = self.x
         y = self.y
-        all_possible_neighbors += [[x-1,y], [x+1,y], [x,y-1],[x,y+1]] 
+        if type == 'a':
+            all_possible_neighbors += [[x-1,y], [x+1,y], [x,y-1],[x,y+1]] 
+        else:
+            all_possible_neighbors += [[x-1,y], [x+1,y], [x,y-1],[x,y+1],[x-1,y-1],[x-1,y+1],[x+1,y-1],[x+1,y+1]] 
+
         for node in all_possible_neighbors:
-            #node is in maze boundaries
             nodex = node[0] - 1
             nodey = node[1] - 1
+            #if the node is in maze boundaries
             if nodex > 0 and nodey > 0: 
                 node_value = maze[nodey][nodex]
-                if node_value == 0:
+                if node_value == 0 or node_value == 'G' or node_value == 'S':
                     neighbors.append([nodex+1, nodey+1])
         return neighbors
 
-        
+    def is_node(self,node):
+        return self.x == node[0] and self.y == node[1]
+
+
 '''
-function greedySearch_a
-finds a path between the start position and the goal position using 
-Greedy algorithm assuming that the agent can move up, down, left, and right, 
-but not diagonally. Further assume that the cost of moving up, down, left, 
-or right is 1.
+function greedySearch finds a path between the start position and the goal 
+position using Greedy algorithm. 
+When type == a, it assumes that the agent can move up, down, left, and right,
+but not diagonally. The cost of moving up, down, left, or right is 1.
+When type == b, it assumes that the agent can move up, down, left, and right,
+and diagonally. The cost of moving up, down, left, right or diagonal is 1.
 '''
-def g(maze ,start, goal):
-    frontier = []
-    startNode = GreedyNode(start[0], start[1])
-    frontier.append(startNode)
-    visited = []
-    visited.append(start)
+def greedySearch(maze ,start, goal,type):
+    startNode = GreedyNode(start[0], start[1],0)
+    frontier = [startNode]
+    visited = [start]
+    visitedNode = []
 
     while len(frontier)!=0:
-        currentNode = frontier.pop()
-        if currentNode.x == goal[0] and currentNode.y == goal[1]:
+        #the code simulates priority queue and pops out the node with the lowest priority
+        min = sys.maxsize
+        for node in frontier:
+            if node.priority < min:
+                currentNode = node
+                min = node.priority
+        frontier.remove(currentNode)
+        visitedNode.append(currentNode)
+
+        #searching stops when goal is reached
+        if currentNode.is_node(goal):
             break
-        for next in currentNode.neighbors():
+        for next in currentNode.neighbors(type,maze):
             if next not in visited:
-                priority = greedy_heuristic(goal, next) 
+                visited.append(next)
+                priority = heuristic(goal, next) 
+                newNode = GreedyNode(next[0], next[1], priority, currentNode) 
+                frontier.append(newNode)
+
+    path = find_path(visitedNode, start, goal)
+    #strips down the start node and the goal node
+    if len(path) > 2:
+        path.remove(path[0])
+        path.pop()
+    if type == 'a':
+        write_output_to_file("pathfinding_a_out.txt", "Greedy", path,maze)
+    else:
+        write_output_to_file("pathfinding_b_out.txt", "Greedy", path,maze)
 
 
-def greedy_heuristic(goal, next):
+def heuristic(goal, next):
     return math.sqrt(math.pow(abs(goal[0] - next[0]),2) + math.pow(abs(goal[1]-next[1]),2)) 
-    
+
+
+def find_path(visited_node,start, goal):
+    path = []
+    currentNode = visited_node.pop()
+    if currentNode.is_node(goal) == False:
+        return None
+    else:
+        while currentNode.is_node(start) == False:
+            path.append(currentNode)
+            currentNode = currentNode.came_from
+        path.append(visited_node[0])
+        path.reverse()
+        return path
+
+
+def write_output_to_file(filename, algorithm_type, output,maze):
+    """
+    Converts the matrix back into a graph maze, and
+    writes outputs to a file.
+    """
+    path = []
+    with open(filename,"a+") as f:
+        f.write("%s\n"%(algorithm_type)) 
+        for i in output:
+            maze[i.y-1][i.x-1] = 'P'
+        for line in range(len(maze)):  
+            for index in range (len(maze[line])):
+                item = maze[line][index]
+                if item == 0:
+                    maze[line][index] = "_"
+                elif item == 1:
+                    maze[line][index] = "X"
+        for line in maze:
+            for chac in line:
+                f.write("%c"%(chac))
+            f.write("\n")
+         
+    f.close()
+        
 
 def convert_list_to_maze(count, line, maze):
     '''
@@ -156,28 +233,29 @@ def convert_list_to_maze(count, line, maze):
     global start, goal 
     newline= []
     for i in line:
-        # obstacle = 1
+        # obstacle normal block= 1
         if i =='X':
             newline.append(1)
-        # non-obstavle = 0
+        # non-obstavle normal block = 0
         elif i =='_':
             newline.append(0)
+        # start block
         elif i =='S':
-            newline.append(0)
+            newline.append('S')
             start = [line.index(i)+1, count]
+        # goal block
         elif i=='G':
-            newline.append(0)
+            newline.append('G')
             goal = [line.index(i)+1, count]
     maze.append(newline)
 
 
-def main():
+def build_maze(filepath):
     global maze, start, goal
     maze=[]
     start = []
     goal = []
 
-    filepath = "pathfinding_a.txt"
     with open(filepath) as f:
         line = f.readline()
         count=1
@@ -187,7 +265,12 @@ def main():
             line = f.readline()
             count += 1
 
-    g(maze, start, goal)
+
+def main():
+    build_maze("pathfinding_a.txt")
+    greedySearch(maze, start, goal, 'a')
+    build_maze("pathfinding_b.txt")
+    greedySearch(maze, start, goal, 'b')
     # path = astar(maze, start, goal)
     # print(path)
 
