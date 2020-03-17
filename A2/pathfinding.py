@@ -98,7 +98,7 @@ def astar(maze, start, goal):
 
 
 '''
-class GreedyNode
+Class GreedyNode
 '''
 class GreedyNode:
     def __init__(self,x,y,priority,came_from=None):
@@ -139,7 +139,7 @@ class GreedyNode:
 
 
 '''
-function greedySearch finds a path between the start position and the goal 
+Function greedySearch finds a path between the start position and the goal 
 position using Greedy algorithm. 
 When type == a, it assumes that the agent can move up, down, left, and right,
 but not diagonally. The cost of moving up, down, left, or right is 1.
@@ -183,10 +183,18 @@ def greedySearch(maze ,start, goal,type):
         write_output_to_file("pathfinding_b_out.txt", "Greedy", path,maze)
 
 
+'''
+Heuristic function returns the Euclidean distance between the goal and the given 
+node
+'''
 def heuristic(goal, next):
     return math.sqrt(math.pow(abs(goal[0] - next[0]),2) + math.pow(abs(goal[1]-next[1]),2)) 
 
 
+'''
+Function find_path returns a list containing all the nodes in the searching path if
+the goal is found, returns None otherwise
+'''
 def find_path(visited_node,start, goal):
     path = []
     currentNode = visited_node.pop()
@@ -201,11 +209,11 @@ def find_path(visited_node,start, goal):
         return path
 
 
+"""
+Function write_output_to_file converts the matrix back into a graph maze, 
+and writes outputs to a file.
+"""
 def write_output_to_file(filename, algorithm_type, output,maze):
-    """
-    Converts the matrix back into a graph maze, and
-    writes outputs to a file.
-    """
     path = []
     with open(filename,"a+") as f:
         f.write("%s\n"%(algorithm_type)) 
@@ -226,10 +234,10 @@ def write_output_to_file(filename, algorithm_type, output,maze):
     f.close()
         
 
-def convert_list_to_maze(count, line, maze):
-    '''
-    convert graph maze into maze of numbers 
-    '''
+'''
+Helper function of build_maze
+'''
+def covert_file_to_matrix(count, line, maze):
     global start, goal 
     newline= []
     for i in line:
@@ -250,6 +258,11 @@ def convert_list_to_maze(count, line, maze):
     maze.append(newline)
 
 
+'''
+Function build_maze constructs a matrix from a graph maze
+provided by a given file. In the matrix, 1 is X , 0 is _, 
+and S and G remain the same as they were in the graph maze. 
+'''
 def build_maze(filepath):
     global maze, start, goal
     maze=[]
@@ -261,7 +274,7 @@ def build_maze(filepath):
         count=1
         while line:
             maze_line = line.strip()
-            convert_list_to_maze(count, maze_line, maze)
+            covert_file_to_matrix(count, maze_line, maze)
             line = f.readline()
             count += 1
 
