@@ -14,8 +14,8 @@ class Node():
         return self.position == other.position
 
 
-def astar(maze, start, goal):
-    """Returns a list of tuples as a path 
+def astar(maze, start, goal, type):
+    """Returns a list of tuples as a path
     from the given start to the given goal in the given maze"""
     # Create start and goal node
     start_node = Node(None, start)
@@ -51,27 +51,32 @@ def astar(maze, start, goal):
             while current is not None:
                 path.append(current.position)
                 current = current.parent
+                
+            if type == 'a':
+                write_output_to_file("pathfinding_a_out.txt", "Greedy", path,maze)
+            else:
+                write_output_to_file("pathfinding_b_out.txt", "Greedy", path,maze)
             return path[::-1] # Return reversed path
+
 
         # Generate children
         children = []
-        for new_position in [(0, -1), (0, 1), (-1, 0), (1, 0)]: # Adjacent squares
-        # , (-1, -1), (-1, 1), (1, -1), (1, 1) for diagonal
+        if type == 'a':
+            possible_neighbors = [(0, -1), (0, 1), (-1, 0), (1, 0)]
+        else:
+            possible_neighbors = [(0, -1), (0, 1), (-1, 0), (1, 0), (-1, -1), (-1, 1), (1, -1), (1, 1)]
 
+        for new_position in possible_neighbors: # Adjacent squares
             # Get node position
             node_position = (current_node.position[0] + new_position[0], current_node.position[1] + new_position[1])
-
             # Make sure within range
             if node_position[0] > (len(maze) - 1) or node_position[0] < 0 or node_position[1] > (len(maze[len(maze)-1]) -1) or node_position[1] < 0:
                 continue
-
             # Make sure walkable terrain
             if maze[node_position[0]][node_position[1]] != 0:
                 continue
-
             # Create new node
             new_node = Node(current_node, node_position)
-
             # append
             children.append(new_node)
 
@@ -97,6 +102,10 @@ def astar(maze, start, goal):
             open_list.append(child)
 
 
+
+
+
+
 '''
 Class GreedyNode
 '''
@@ -109,9 +118,9 @@ class GreedyNode:
 
     '''
     function neighbors returns all the neighbor nodes
-    when type == a, the algorithm assumes that the agent can move up, down, left, and right, 
+    when type == a, the algorithm assumes that the agent can move up, down, left, and right,
     but not diagonally.In best scenerio, the node has four neighbors.
-    when type == b, the algorithm assumes that the agent can move up, down, left, and right, 
+    when type == b, the algorithm assumes that the agent can move up, down, left, and right,
     and diagonally. In best scenerio, the node has eight neighbors.
     '''
     def neighbors(self,type,maze):
@@ -120,15 +129,15 @@ class GreedyNode:
         x = self.x
         y = self.y
         if type == 'a':
-            all_possible_neighbors += [[x-1,y], [x+1,y], [x,y-1],[x,y+1]] 
+            all_possible_neighbors += [[x-1,y], [x+1,y], [x,y-1],[x,y+1]]
         else:
-            all_possible_neighbors += [[x-1,y], [x+1,y], [x,y-1],[x,y+1],[x-1,y-1],[x-1,y+1],[x+1,y-1],[x+1,y+1]] 
+            all_possible_neighbors += [[x-1,y], [x+1,y], [x,y-1],[x,y+1],[x-1,y-1],[x-1,y+1],[x+1,y-1],[x+1,y+1]]
 
         for node in all_possible_neighbors:
             nodex = node[0] - 1
             nodey = node[1] - 1
             #if the node is in maze boundaries
-            if nodex > 0 and nodey > 0: 
+            if nodex > 0 and nodey > 0:
                 node_value = maze[nodey][nodex]
                 if node_value == 0 or node_value == 'G' or node_value == 'S':
                     neighbors.append([nodex+1, nodey+1])
@@ -139,8 +148,8 @@ class GreedyNode:
 
 
 '''
-Function greedySearch finds a path between the start position and the goal 
-position using Greedy algorithm. 
+Function greedySearch finds a path between the start position and the goal
+position using Greedy algorithm.
 When type == a, it assumes that the agent can move up, down, left, and right,
 but not diagonally. The cost of moving up, down, left, or right is 1.
 When type == b, it assumes that the agent can move up, down, left, and right,
@@ -168,8 +177,8 @@ def greedySearch(maze ,start, goal,type):
         for next in currentNode.neighbors(type,maze):
             if next not in visited:
                 visited.append(next)
-                priority = heuristic(goal, next) 
-                newNode = GreedyNode(next[0], next[1], priority, currentNode) 
+                priority = heuristic(goal, next)
+                newNode = GreedyNode(next[0], next[1], priority, currentNode)
                 frontier.append(newNode)
 
     path = find_path(visitedNode, start, goal)
@@ -177,6 +186,7 @@ def greedySearch(maze ,start, goal,type):
     if len(path) > 2:
         path.remove(path[0])
         path.pop()
+
     if type == 'a':
         write_output_to_file("pathfinding_a_out.txt", "Greedy", path,maze)
     else:
@@ -184,11 +194,11 @@ def greedySearch(maze ,start, goal,type):
 
 
 '''
-Heuristic function returns the Euclidean distance between the goal and the given 
+Heuristic function returns the Euclidean distance between the goal and the given
 node
 '''
 def heuristic(goal, next):
-    return math.sqrt(math.pow(abs(goal[0] - next[0]),2) + math.pow(abs(goal[1]-next[1]),2)) 
+    return math.sqrt(math.pow(abs(goal[0] - next[0]),2) + math.pow(abs(goal[1]-next[1]),2))
 
 
 '''
@@ -210,16 +220,16 @@ def find_path(visited_node,start, goal):
 
 
 """
-Function write_output_to_file converts the matrix back into a graph maze, 
+Function write_output_to_file converts the matrix back into a graph maze,
 and writes outputs to a file.
 """
 def write_output_to_file(filename, algorithm_type, output,maze):
     path = []
     with open(filename,"a+") as f:
-        f.write("%s\n"%(algorithm_type)) 
+        f.write("%s\n"%(algorithm_type))
         for i in output:
             maze[i.y-1][i.x-1] = 'P'
-        for line in range(len(maze)):  
+        for line in range(len(maze)):
             for index in range (len(maze[line])):
                 item = maze[line][index]
                 if item == 0:
@@ -230,15 +240,15 @@ def write_output_to_file(filename, algorithm_type, output,maze):
             for chac in line:
                 f.write("%c"%(chac))
             f.write("\n")
-         
+
     f.close()
-        
+
 
 '''
 Helper function of build_maze
 '''
 def covert_file_to_matrix(count, line, maze):
-    global start, goal 
+    global start, goal
     newline= []
     for i in line:
         # obstacle normal block= 1
@@ -260,8 +270,8 @@ def covert_file_to_matrix(count, line, maze):
 
 '''
 Function build_maze constructs a matrix from a graph maze
-provided by a given file. In the matrix, 1 is X , 0 is _, 
-and S and G remain the same as they were in the graph maze. 
+provided by a given file. In the matrix, 1 is X , 0 is _,
+and S and G remain the same as they were in the graph maze.
 '''
 def build_maze(filepath):
     global maze, start, goal
@@ -281,10 +291,10 @@ def build_maze(filepath):
 
 def main():
     build_maze("pathfinding_a.txt")
-    greedySearch(maze, start, goal, 'a')
+    astar(maze, start, goal, 'a')
+    #greedySearch(maze, start, goal, 'a')
     build_maze("pathfinding_b.txt")
-    greedySearch(maze, start, goal, 'b')
-    # path = astar(maze, start, goal)
-    # print(path)
+    astar(maze, start, goal, 'b')
+    #greedySearch(maze, start, goal, 'b')
 
 main()
