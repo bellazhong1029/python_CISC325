@@ -14,6 +14,7 @@ class Node():
         return self.position == other.position
 
 
+
 def astar(maze, start, goal, type):
     """Returns a list of tuples as a path
     from the given start to the given goal in the given maze"""
@@ -51,11 +52,11 @@ def astar(maze, start, goal, type):
             while current is not None:
                 path.append(current.position)
                 current = current.parent
-                
+
             if type == 'a':
-                write_output_to_file("pathfinding_a_out.txt", "Greedy", path,maze)
+                write_output_to_file_astar("pathfinding_a_out.txt", "Astar", path[::-1],maze)
             else:
-                write_output_to_file("pathfinding_b_out.txt", "Greedy", path,maze)
+                write_output_to_file_astar("pathfinding_b_out.txt", "Astar", path[::-1],maze)
             return path[::-1] # Return reversed path
 
 
@@ -201,6 +202,7 @@ def heuristic(goal, next):
     return math.sqrt(math.pow(abs(goal[0] - next[0]),2) + math.pow(abs(goal[1]-next[1]),2))
 
 
+
 '''
 Function find_path returns a list containing all the nodes in the searching path if
 the goal is found, returns None otherwise
@@ -244,6 +246,35 @@ def write_output_to_file(filename, algorithm_type, output,maze):
     f.close()
 
 
+
+
+
+
+def write_output_to_file_astar(filename, algorithm_type, output,maze):
+    path = []
+    with open(filename,"a+") as f:
+        f.write("%s\n"%(algorithm_type))
+        # for i in output:
+        #     maze[i.y-1][i.x-1] = 'P'
+        for line in range(len(maze)):
+            for index in range (len(maze[line])):
+                item = maze[line][index]
+                if item == 0:
+                    maze[line][index] = "_"
+                elif item == 1:
+                    maze[line][index] = "X"
+        for path in output:
+            x = path[1]-1
+            y = path[0]
+            maze[x][y]="P"
+        for line in maze:
+            for chac in line:
+                f.write("%c"%(chac))
+            f.write("\n")
+    f.close()
+
+
+
 '''
 Helper function of build_maze
 '''
@@ -267,6 +298,26 @@ def covert_file_to_matrix(count, line, maze):
             goal = [line.index(i)+1, count]
     maze.append(newline)
 
+def covert_file_to_matrix_aStar(count, line, maze):
+    global start, goal
+    newline= []
+    for i in line:
+        # obstacle normal block= 1
+        if i =='X':
+            newline.append(1)
+        # non-obstavle normal block = 0
+        elif i =='_':
+            newline.append(0)
+        # start block
+        elif i =='S':
+            newline.append('S')
+            start = (line.index(i)+1, count)
+        # goal block
+        elif i=='G':
+            newline.append('G')
+            goal = (line.index(i)+1, count)
+    maze.append(newline)
+
 
 '''
 Function build_maze constructs a matrix from a graph maze
@@ -288,13 +339,32 @@ def build_maze(filepath):
             line = f.readline()
             count += 1
 
+def build_maze_astar(filepath):
+    global maze, startastar, goalastar
+    maze=[]
+    startastar = ()
+    goalastar = ()
+
+    with open(filepath) as f:
+        line = f.readline()
+        count=1
+        while line:
+            maze_line = line.strip()
+            covert_file_to_matrix_aStar(count, maze_line, maze)
+            line = f.readline()
+            count += 1
+
 
 def main():
-    build_maze("pathfinding_a.txt")
-    astar(maze, start, goal, 'a')
-    #greedySearch(maze, start, goal, 'a')
-    build_maze("pathfinding_b.txt")
+    # build_maze("pathfinding_a.txt")
+    # greedySearch(maze, start, goal, 'a')
+    # build_maze("pathfinding_b.txt")
+    # greedySearch(maze, start, goal, 'b')
+
+    build_maze_astar("pathfinding_a.txt")
+    result = astar(maze, start, goal, 'a')
+    print(result)
+    build_maze_astar("pathfinding_b.txt")
     astar(maze, start, goal, 'b')
-    #greedySearch(maze, start, goal, 'b')
 
 main()
