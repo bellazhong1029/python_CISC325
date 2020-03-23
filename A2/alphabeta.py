@@ -86,21 +86,24 @@ def input_to_tree(line):
     return root
 
 
-def write_output_to_file(filename, output):
+def write_output_to_file(filename, output, index):
     """
     Writes outpus to a file.
     """
-    with open(filename,"w+") as f:
-        f.write(output) 
+    with open(filename,"a+") as f:
+        f.write("Graph"+str(index)+": " + output) 
     f.close()
 
         
 lines=read_input_file("alphabeta.txt")
+index = 0
 while len(lines)>0:
+    index += 1
     line=lines.pop(0)
     if len(line)>1: #not a blankspace
         root=input_to_tree(line)
         nr_leafs_visited=0
         best_val=alpha_beta(root, -10_000_000, 10_000_000)
-        output = "Best possible value: %d, Number of leafs visited %d\n" %(best_val, nr_leafs_visited)
-        write_output_to_file("alphabeta_out.txt",output)
+        output = "Best possible value: %d; Number of leafs visited %d\n" %(best_val, nr_leafs_visited)
+        write_output_to_file("alphabeta_out.txt",output,index)
+        
