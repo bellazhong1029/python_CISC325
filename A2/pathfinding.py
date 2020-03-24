@@ -35,7 +35,7 @@ class Node:
             #if the node is in maze boundaries
             if nodex > 0 and nodey > 0:
                 node_value = maze[nodey][nodex]
-                if node_value == 0 or node_value == 'G' or node_value == 'S':
+                if node_value == '_' or node_value == 'G' or node_value == 'S':
                     neighbors.append([nodex+1, nodey+1])
         return neighbors
 
@@ -170,7 +170,6 @@ def heuristic(goal, next):
     return math.sqrt(math.pow(abs(goal[0] - next[0]),2) + math.pow(abs(goal[1]-next[1]),2))
 
 
-
 '''
 Function find_path returns a list containing all the nodes in the searching path if
 the goal is found, returns None otherwise
@@ -199,13 +198,6 @@ def write_output_to_file(filename, algorithm_type, output,maze):
         f.write("%s\n"%(algorithm_type))
         for i in output:
             maze[i.y-1][i.x-1] = 'P'
-        for line in range(len(maze)):
-            for index in range (len(maze[line])):
-                item = maze[line][index]
-                if item == 0:
-                    maze[line][index] = "_"
-                elif item == 1:
-                    maze[line][index] = "X"
         for line in maze:
             for chac in line:
                 f.write("%c"%(chac))
@@ -221,20 +213,11 @@ def covert_file_to_matrix(count, line, maze):
     global start, goal
     newline= []
     for i in line:
-        # obstacle normal block= 1
-        if i =='X':
-            newline.append(1)
-        # non-obstavle normal block = 0
-        elif i =='_':
-            newline.append(0)
-        # start block
-        elif i =='S':
-            newline.append('S')
+        if i =='S':
             start = [line.index(i)+1, count]
-        # goal block
         elif i=='G':
-            newline.append('G')
             goal = [line.index(i)+1, count]
+        newline.append(i)
     maze.append(newline)
 
 
