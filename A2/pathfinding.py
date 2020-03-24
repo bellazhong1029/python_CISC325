@@ -75,13 +75,13 @@ def greedySearch(maze ,start, goal,type):
                 min = node.priority
         frontier.remove(currentNode)
         visitedNode.append(currentNode)
+        visited.append([currentNode.x, currentNode.y])
 
         #searching stops when goal is reached
         if currentNode.is_node(goal):
             break
         for next in currentNode.neighbors(type,maze):
             if next not in visited:
-                visited.append(next)
                 priority = heuristic(goal, next)
                 newNode = Node(next[0], next[1], priority, currentNode)
                 frontier.append(newNode)
